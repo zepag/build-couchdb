@@ -66,6 +66,8 @@ namespace :couchdb do
         utf8_h = File.new("src/couchdb/priv/couch_js/utf8.h", "a")
         utf8_h.write("\n")
         utf8_h.close
+
+        sh "cat src/couchdb/priv/couch_js/utf8.h ; echo EOL"
       end
 
       Dir.mktmpdir 'couchdb-build' do |dir|
