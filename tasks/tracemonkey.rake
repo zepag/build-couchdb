@@ -57,9 +57,16 @@ namespace :tracemonkey do
           # 3. Just symlink it so ld finds what it wants. And that worked.
           sh "ln", "-sf", "libmozjs.so", "#{BUILD}/lib/libmozjs185.so" unless DISTRO[0] == :osx
 
-          # Manually install the Mozilla header files.
-          mozilla_include = "#{BUILD}/include/js/mozilla"
+          # Manually install some Mozilla header files.
+          js_include = "#{BUILD}/include/js"
+          mozilla_include = "#{js_include}/mozilla"
+
+          Dir.mkdir js_include unless File.directory?(js_include)
           Dir.mkdir mozilla_include unless File.directory?(mozilla_include)
+
+          Dir.glob("#{DEPS}/spidermonkey/js/public/*").each do |header|
+            sh "cp", header, js_include
+          end
 
           Dir.glob("#{DEPS}/spidermonkey/mfbt/*").each do |header|
             sh "cp", header, mozilla_include
