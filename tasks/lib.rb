@@ -298,7 +298,7 @@ def configure_cmd(source, opts={})
   prefix = "--prefix='#{COUCH_BUILD}'" if opts[:prefix] == :couch
   prefix = "--prefix='#{BUILD}'"       if opts[:prefix] == :deps
 
-  js = "--with-js-include='#{BUILD}/include/js' --with-js-lib='#{BUILD}/lib'"
+  js = "--with-js-include='#{BUILD}/include/js' --with-js-lib='#{BUILD}/lib' --enable-js-trunk"
 
   return "env #{env} #{source}/configure #{prefix} #{js} --with-erlang=#{BUILD}/lib/erlang/usr/include"
 end
