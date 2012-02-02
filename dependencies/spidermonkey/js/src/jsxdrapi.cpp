@@ -37,6 +37,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+#include "mozilla/Util.h"
+
 #include "jsversion.h"
 
 #if JS_HAS_XDR
@@ -54,9 +56,11 @@
 #include "jsscript.h"           /* js_XDRScript */
 #include "jsstr.h"
 #include "jsxdrapi.h"
+#include "vm/Debugger.h"
 
 #include "jsobjinlines.h"
 
+using namespace mozilla;
 using namespace js;
 
 #ifdef DEBUG
@@ -239,6 +243,7 @@ JS_XDRInitBase(JSXDRState *xdr, JSXDRMode mode, JSContext *cx)
     xdr->reghash = NULL;
     xdr->userdata = NULL;
     xdr->script = NULL;
+    xdr->state = NULL;
 }
 
 JS_PUBLIC_API(JSXDRState *)
@@ -639,12 +644,13 @@ js_XDRAtom(JSXDRState *xdr, JSAtom **atomp)
         return JS_FALSE;
     atom = NULL;
     cx = xdr->cx;
-    if (nchars <= JS_ARRAY_LENGTH(stackChars)) {
+    if (nchars <= ArrayLength(stackChars)) {
         chars = stackChars;
     } else {
         /*
-         * This is very uncommon. Don't use the tempPool arena for this as
-         * most allocations here will be bigger than tempPool's arenasize.
+         * This is very uncommon. Don't use the tempLifoAlloc arena for this as
+         * most allocations here will be bigger than tempLifoAlloc's default
+         * chunk size.
          */
         chars = (jschar *) cx->malloc_(nchars * sizeof(jschar));
         if (!chars)
@@ -662,16 +668,54 @@ js_XDRAtom(JSXDRState *xdr, JSAtom **atomp)
     return JS_TRUE;
 }
 
-JS_PUBLIC_API(JSBool)
-JS_XDRScriptObject(JSXDRState *xdr, JSObject **scriptObjp)
+XDRScriptState::XDRScriptState(JSXDRState *x)
+    : xdr(x)
+    , filename(NULL)
+    , filenameSaved(false)
 {
+    JS_ASSERT(!xdr->state);
+
+    xdr->state = this;
+}
+
+XDRScriptState::~XDRScriptState()
+{
+    xdr->state = NULL;
+    if (xdr->mode == JSXDR_DECODE && filename && !filenameSaved)
+        xdr->cx->free_((void *)filename);
+}
+
+JS_PUBLIC_API(JSBool)
+JS_XDRFunctionObject(JSXDRState *xdr, JSObject **objp)
+{
+    XDRScriptState fstate(xdr);
+
+    if (xdr->mode == JSXDR_ENCODE) {
+        JSFunction* fun = (*objp)->getFunctionPrivate();
+        if (!fun)
+            return false;
+
+        fstate.filename = fun->script()->filename;
+    }
+
+    if (!JS_XDRCStringOrNull(xdr, (char **) &fstate.filename))
+        return false;
+
+    return js_XDRFunctionObject(xdr, objp);
+}
+
+JS_PUBLIC_API(JSBool)
+JS_XDRScript(JSXDRState *xdr, JSScript **scriptp)
+{
+    JS_ASSERT(!xdr->state);
+
     JSScript *script;
     uint32 magic;
     if (xdr->mode == JSXDR_DECODE) {
         script = NULL;
-        *scriptObjp = NULL;
+        *scriptp = NULL;
     } else {
-        script = (*scriptObjp)->getScript();
+        script = *scriptp;
         magic = JSXDR_MAGIC_SCRIPT_CURRENT;
     }
 
@@ -684,16 +728,24 @@ JS_XDRScriptObject(JSXDRState *xdr, JSObject **scriptObjp)
         return false;
     }
 
+    XDRScriptState state(xdr);
+    if (!xdr->state)
+        return false;
+
+    if (xdr->mode == JSXDR_ENCODE)
+        state.filename = script->filename;
+    if (!JS_XDRCStringOrNull(xdr, (char **) &state.filename))
+        return false;
+
     if (!js_XDRScript(xdr, &script))
         return false;
 
     if (xdr->mode == JSXDR_DECODE) {
+        JS_ASSERT(!script->compileAndGo);
+        script->u.globalObject = GetCurrentGlobal(xdr->cx);
         js_CallNewScriptHook(xdr->cx, script, NULL);
-        *scriptObjp = js_NewScriptObject(xdr->cx, script);
-        if (!*scriptObjp) {
-            js_DestroyScript(xdr->cx, script);
-            return false;
-        }
+        Debugger::onNewScript(xdr->cx, script, NULL);
+        *scriptp = script;
     }
 
     return true;
