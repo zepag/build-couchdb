@@ -70,12 +70,19 @@ On **Scientific Linux**
 
 On **Solaris**
 
-This build only supports the OpenCSW toolchain. If you do not use OpenCSW, I
-wish you the best. If you have success, let me know!
+This tool only supports the OpenCSW toolchain. If you have success with other
+tools, let me know!
 
-The SunStudio tools are required:
+The [Solaris Studio][ss] (formerly SunStudio) tools are required. On Solaris 10, it's easy.
 
     sudo pkg install ss-dev
+
+On Solaris 11, go to the [Solaris Studio download page][ss-download] and get the
+**Package Installer** file you need. Copy it to your Solaris machine and follow
+the [Solaris Studio installation instructions][ss-install], something like this:
+
+    bzcat SolarisStudio12.2-*.tar.bz2 | /bin/tar -xf -
+    cd SolarisStudio-12.2-*-pkg-ML
 
 Also, OpenCSW packages are needed.
 
@@ -265,5 +272,9 @@ The output will look similar to this:
     LDFLAGS='-R/Users/jhs/src/build-couchdb/build/lib -L/Users/jhs/src/build-couchdb/build/lib' CFLAGS='-I/Users/jhs/src/build-couchdb/build/include/js -I/Users/jhs/src/build-couchdb/build/lib/erlang/usr/include' ./configure
 
 In the CouchDB source, paste the above code after running `./bootstrap`. Next, you can run `make` or `make dev`, or anything.
+
+[ss]: http://www.oracle.com/technetwork/server-storage/solarisstudio/overview/index.html
+[ss-download]: http://www.oracle.com/technetwork/server-storage/solarisstudio/downloads/index.html
+[ss-install]: http://download.oracle.com/docs/cd/E18659_01/html/821-1385/gemyt.html
 
 vim: tw=80
