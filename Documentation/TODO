@@ -10,4 +10,11 @@ Bugs
  * There should be no os_dependencies task. Dependencies should be detected by
    the specific task that needs them and only warn the admin about what to do.
 
+Features
+========
+
+* Look into various Spidermonkey configure options
+  * --enable-install-strip (didn't seem to do anything)
+  * --enable-tracejit (seems to be enabled automatically)
+
 vim: tw=80
