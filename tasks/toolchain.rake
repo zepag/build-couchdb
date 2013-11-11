@@ -35,6 +35,8 @@ namespace :toolchain do
                    "--#{datadir}=#{BUILD}/share/autoconf-#{version}"
               end
 
+              ubuntu_texi_fix(DISTRO, 'autoconf', version)
+
               gmake
               gmake "install"
               record_manifest task.name
@@ -82,6 +84,8 @@ namespace :toolchain do
               show_file('config.log') do
                 sh "#{AUTOMAKE_SOURCE}/configure", "--prefix=#{BUILD}"
               end
+
+              ubuntu_texi_fix(DISTRO, 'automake', version)
 
               gmake
               gmake "install"

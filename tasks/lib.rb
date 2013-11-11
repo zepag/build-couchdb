@@ -263,6 +263,19 @@ def ed(filename, *cmds)
   sh "echo '#{cmds}' | ed '#{filename}'"
 end
 
+def ubuntu_texi_fix(distro, version)
+  return unless version == "2.69"
+  return unless version == :ubuntu
+
+  major = DISTRO[1].split(".")[0].to_i
+  minor = DISTRO[1].split(".")[1].to_i
+
+  return if major < 12 # up to 11 is fine.
+  return if minor == 4 # 12.04 is fine.
+
+  raise "I need to fix 2.69, perhaps just on Ubuntu"
+end
+
 def with_autoconf ver
   old_perl5lib = (ENV['PERL5LIB'] || "").split(":")
   new_perl5lib = ["#{BUILD}/share/autoconf-#{ver}/autoconf"] + old_perl5lib
