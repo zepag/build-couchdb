@@ -1,12 +1,21 @@
 [submodule "dependencies/couchdb"]
-	path = dependencies/couchdb
+        path = dependencies/couchdb
         url = https://git-wip-us.apache.org/repos/asf/couchdb.git
 [submodule "dependencies/otp"]
-	path = dependencies/otp
-	url = git://github.com/erlang/otp.git
+        path = dependencies/otp
+        url = https://github.com/erlang/otp.git
+[submodule "dependencies/curl"]
+        path = dependencies/curl
+        url = https://github.com/bagder/curl.git
 [submodule "dependencies/autoconf-archive"]
-	path = dependencies/autoconf-archive
-	url = git://git.sv.gnu.org/autoconf-archive.git
+        path = dependencies/autoconf-archive
+        url = http://git.savannah.gnu.org/r/autoconf-archive.git
 [submodule "dependencies/gnulib"]
-	path = dependencies/gnulib
-	url = git://git.savannah.gnu.org/gnulib.git
+        path = dependencies/gnulib
+        url = http://git.savannah.gnu.org/r/gnulib.git
+[submodule "dependencies/libtool"]
+        path = dependencies/libtool
+        url = http://git.savannah.gnu.org/r/libtool.git
+[submodule "dependencies/autoconf-2.69"]
+        path = dependencies/autoconf-2.69
+        url = http://git.savannah.gnu.org/r/autoconf.git
